@@ -6,23 +6,47 @@ TODO: Save setting for selected color style and checked styles to export
 */
 figma.showUI(__html__, { width: 400, height: 400 });
 // Messages from the UI
-figma.ui.onmessage = msg => {
-    if (msg.type === "generate") {
-        Generate(msg.options);
-    }
-    else if (msg.type === "copy") {
-        CopyToClipboard();
-    }
-    else if (msg.type === "cancel") {
-        figma.closePlugin();
+figma.ui.onmessage = (msg) => {
+    switch (msg.type) {
+        case "generate":
+            Generate(msg.options);
+            break;
+        case "copy":
+            CopyToClipboard();
+            break;
+        case "cancel":
+            figma.closePlugin();
+            break;
+        case "get-base":
+            GetBaseStyle();
+            break;
+        case "message":
+            SendMessage(msg.message);
+            break;
+        default:
+            break;
     }
 };
+function GetBaseStyle() {
+    const textStyles = figma.getLocalTextStyles().map((textStyle) => {
+        return {
+            name: `${textStyle.name} (${textStyle.fontSize}px)`,
+            id: textStyle.id,
+        };
+    });
+    figma.ui.postMessage({ type: "populate-base-select", data: textStyles });
+}
+function SendMessage(message) {
+    figma.notify(message);
+}
 // Main backend function, generate the styles and pass them to the UI
 function Generate(options) {
     const data = {
         colors: [],
         sizes: [],
-        effects: []
+        remBaseSize: {},
+        remSizes: [],
+        effects: [],
     };
     // No style checked
     if (!options.useColor && !options.useText && !options.useEffect) {
@@ -31,12 +55,12 @@ function Generate(options) {
     }
     if (options.useColor) {
         const paintStyles = figma.getLocalPaintStyles();
-        const colors = paintStyles.map(paintStyle => {
+        const colors = paintStyles.map((paintStyle) => {
             let color = paintStyle.paints[0];
             const rgb = {
                 red: BeautifyColor(color.color.r),
                 green: BeautifyColor(color.color.g),
-                blue: BeautifyColor(color.color.b)
+                blue: BeautifyColor(color.color.b),
             };
             let ColorStyle = `rgba(${rgb.red}, ${rgb.green}, ${rgb.blue}, ${color.opacity})`;
             switch (options.colorStyle.toUpperCase()) {
@@ -49,33 +73,56 @@ function Generate(options) {
             }
             return {
                 name: FixNaming(paintStyle.name),
-                ColorStyle: ColorStyle
+                ColorStyle: ColorStyle,
             };
         });
         data.colors = colors;
     }
     if (options.useText) {
         const textStyles = figma.getLocalTextStyles();
-        const textSizes = textStyles.map(textStyle => {
-            return { name: FixNaming(textStyle.name), size: textStyle.fontSize };
+        const textSizes = textStyles.map((textStyle) => {
+            return {
+                name: FixNaming(textStyle.name),
+                size: textStyle.fontSize,
+                id: textStyle.id,
+            };
         });
         data.sizes = textSizes;
+        if (options.useRem) {
+            const baseSize = textSizes.find((textStyle) => {
+                return textStyle.id === options.selectedBase;
+            });
+            if (baseSize === undefined) {
+                figma.notify("❗ Error: Selected base style doesn't exist.");
+                GetBaseStyle();
+                return;
+            }
+            const remSizes = textSizes.map((textStyle) => {
+                const remSize = textStyle.size / baseSize.size;
+                return {
+                    name: FixNaming(textStyle.name),
+                    size: +remSize.toFixed(2),
+                };
+            });
+            data.remBaseSize = baseSize;
+            data.remSizes = remSizes;
+        }
     }
     if (options.useEffect) {
         const effectStyles = figma.getLocalEffectStyles();
-        const effects = effectStyles.map(effectStyle => {
+        const effects = effectStyles.map((effectStyle) => {
             const { shadows, blur } = GenerateEffectStyle(effectStyle.effects);
             return {
                 name: FixNaming(effectStyle.name),
                 shadows: shadows,
-                blur: blur
+                blur: blur,
             };
         });
         data.effects = effects;
     }
     if (data.colors.length <= 0 &&
-        data.sizes.length >= 0 &&
-        data.effects.length >= 0) {
+        data.sizes.length <= 0 &&
+        data.effects.length <= 0) {
         figma.notify("⚠ No styles found.");
         return;
     }
@@ -84,7 +131,7 @@ function Generate(options) {
 function GenerateEffectStyle(effects) {
     const shadows = [];
     let blur = ``;
-    effects.forEach(effect => {
+    effects.forEach((effect) => {
         if (effect.type === "DROP_SHADOW" || effect.type === "INNER_SHADOW") {
             shadows.push(GenerateShadowStyle(effect)); // can have multiple shadows on a single element
         }
@@ -94,7 +141,7 @@ function GenerateEffectStyle(effects) {
     });
     const result = {
         shadows: `${shadows}`,
-        blur: blur
+        blur: blur,
     };
     return result;
 }
@@ -111,7 +158,16 @@ function CopyToClipboard() {
 }
 // Figma uses slashes for grouping styles together. This turns that slash into a dash
 function FixNaming(name) {
-    return name.replace("/", "-");
+    return CamelCaseToKebabCase(name
+        .trim()
+        .replace("/", "--") // Figma uses / to separate different substyles, change this to BEM modifier
+        .replace(" ", "-") // Remove any spaces
+    ).toLowerCase();
+}
+function CamelCaseToKebabCase(name) {
+    return `${name.charAt(0)}${name
+        .substr(1)
+        .replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, "$1-$2")}`; // camelCase to kebab-case
 }
 // Figma stores the color value as a 0 to 1 decimal instead of 0 to 255.
 function BeautifyColor(colorValue) {

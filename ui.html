@@ -1,4 +1,16 @@
 <style>
+  .hide-by-default {
+    display: none;
+  }
+
+  #use-rem-container {
+    margin-left: 20px;
+  }
+
+  .hide-by-default--show {
+    display: block;
+  }
+
   button {
     box-sizing: border-box;
   }
@@ -8,7 +20,7 @@
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
-    padding: 5vmin;
+    padding: 2vmin;
     padding-top: 0;
   }
 
@@ -72,13 +84,13 @@
     -ms-flex-align: center;
     align-items: center;
     height: 32px;
-    padding: 8px 4px 8px 8px;
+    padding: 8px 4px 8px 0;
     cursor: default;
-    color: rgba(0, 0, 0, 0.3);
+    color: hsl(359, 20%, 10%);
     background-color: #ffffff;
     font-family: "Inter", sans-serif;
-    font-weight: 400;
-    font-size: 11px;
+    font-weight: 600;
+    font-size: 12px;
     line-height: 16px;
     letter-spacing: 0.005em;
   }
@@ -1689,6 +1701,20 @@
       <input class="checkbox__box" type="checkbox" id="use-text" checked />
       <label class="checkbox__label" for="use-text">Text sizes</label>
     </div>
+    <div id="use-rem-container">
+      <div class="checkbox">
+        <input class="checkbox__box" type="checkbox" id="use-rem" />
+        <label class="checkbox__label" for="use-rem">Use REM units</label>
+      </div>
+    </div>
+    <div class="js-use-rem-selection-container hide-by-default">
+      <label class="label" for="selected-base"
+        >Select a size to act as base size</label
+      >
+      <select id="selected-base" class="select-menu">
+        <option value="none" selected="selected">NONE</option>
+      </select>
+    </div>
     <div class="checkbox">
       <input class="checkbox__box" type="checkbox" id="use-effects" checked />
       <label class="checkbox__label" for="use-effects">Effects</label>
@@ -1712,69 +1738,69 @@
 </div>
 
 <script>
-  (function() {
+  (function () {
     "use strict";
     var e,
       t = { selector: "disclosure" },
-      n = function(t) {
+      n = function (t) {
         let n = this.parentNode.parentNode,
           l = n.querySelectorAll("li"),
           o = this.parentNode.classList.contains(e + "--expanded");
-        l.forEach(t => {
+        l.forEach((t) => {
           t.classList.remove(e + "--expanded");
         }),
           this.parentNode.classList.add(e + "--expanded"),
           o && this.parentNode.classList.remove(e + "--expanded");
       };
     window.disclosure = {
-      init: function(l) {
+      init: function (l) {
         let o = Object.assign({}, t, l);
         e = o.selector;
         let i = document.querySelectorAll("." + e + "__label");
-        i.forEach(e => {
+        i.forEach((e) => {
           e.addEventListener("click", n, !1);
         });
       },
-      destroy: function() {
+      destroy: function () {
         let t = document.querySelectorAll("." + e + "__label");
-        t.forEach(e => {
+        t.forEach((e) => {
           e.removeEventListener("click", n, !1);
         });
-      }
+      },
     };
   })(),
-    (function() {
+    (function () {
       "use strict";
       var e,
         t = { selector: ".input-icon" },
-        n = function(e) {
+        n = function (e) {
           let t = this.querySelector(".icon");
           t.classList.remove("icon--black-3"), t.classList.add("icon--blue");
         },
-        l = function(e) {
+        l = function (e) {
           let t = this.querySelector(".icon");
           t.classList.add("icon--black-3"), t.classList.remove("icon--blue");
         };
       window.iconInput = {
-        init: function(o) {
+        init: function (o) {
           let i = Object.assign({}, t, o);
           e = i.selector;
           let s = document.querySelectorAll(e);
-          s.forEach(e => {
+          s.forEach((e) => {
             e.addEventListener("focusin", n, !1),
               e.addEventListener("focusout", l, !1);
           });
         },
-        destroy: function() {
+        destroy: function () {
           let t = document.querySelectorAll(e);
-          t.forEach(e => {
+          t.forEach((e) => {
             e.removeEventListener("focusin", n, !1),
               e.removeEventListener("focusout", l, !1);
           });
-        }
+        },
       };
     })(),
-    (function() {
+    (function () {
       "use strict";
       function e() {
         let e = a.length;
@@ -1882,12 +1908,12 @@
           parseInt(
             window.getComputedStyle(e, null).getPropertyValue("padding-bottom")
           ),
-          parseInt(window.getComputedStyle(e, null).getPropertyValue("height"))
+          parseInt(window.getComputedStyle(e, null).getPropertyValue("height")),
         ];
         d += o(t);
       }
       function o(e) {
-        return e.reduce(function(e, t) {
+        return e.reduce(function (e, t) {
           return e + t;
         }, 0);
       }
@@ -1899,7 +1925,7 @@
         d,
         u = { selector: "select-menu", position: "under" },
         p = !1,
-        m = function(e) {
+        m = function (e) {
           let t = this;
           if ("BUTTON" == t.tagName) {
             this.classList.toggle(s + "__button--active");
@@ -1916,7 +1942,7 @@
               a = l.querySelectorAll("option"),
               c = a.length,
               r = new Event("change");
-            a.forEach(e => {
+            a.forEach((e) => {
               e.removeAttribute("selected");
             }),
               (l.value = o),
@@ -1938,12 +1964,12 @@
             }
           }
         },
-        v = function(e) {
+        v = function (e) {
           e.stopPropagation();
         },
-        f = function(e) {
+        f = function (e) {
           let t = document.querySelectorAll("select." + s);
-          t.forEach(t => {
+          t.forEach((t) => {
             let n = t.parentNode,
               l = n.querySelector("UL"),
               o = n.querySelector("BUTTON");
@@ -1956,7 +1982,7 @@
           });
         };
       window.selectMenu = {
-        init: function(t) {
+        init: function (t) {
           1 == p && selectMenu.destroy(),
             (i = Object.assign({}, u, t)),
             (s = i.selector),
@@ -1965,9 +1991,9 @@
             document.addEventListener("click", f, !1),
             (p = !0);
         },
-        destroy: function() {
+        destroy: function () {
           let e = document.querySelectorAll("select." + s);
-          e.forEach(e => {
+          e.forEach((e) => {
             let t = e.parentNode,
               n = t.querySelector("BUTTON"),
               l = t.querySelector("UL");
@@ -1975,46 +2001,111 @@
           }),
             document.removeEventListener("click", f, !1),
             (p = !1);
-        }
+        },
       };
     })();
 </script>
-<script>
-  // Figma Components code for select
-  selectMenu.init();
 
+<script>
+  // Messages from "backend"
+  onmessage = (event) => {
+    switch (event.data.pluginMessage.type) {
+      case "generated":
+        GenerateStyles(event.data.pluginMessage.data);
+        break;
+      case "copy":
+        CopyToClipboard();
+        break;
+      case "populate-base-select":
+        PopulateBaseSelect(event.data.pluginMessage.data);
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Figma Components code for select
   selectMenu.init({
-    position: "positionToSelection"
+    position: "positionToSelection",
   });
 
   const textArea = document.getElementById("export");
 
   const textAreaContainer = document.querySelector(".textarea-container");
 
+  function sanitizeHTML(str) {
+    const temp = document.createElement("div");
+    temp.textContent = str;
+    return temp.innerHTML.replace(/[&\/\\#,+()$~%.'":;*?<>{}]/g, "");
+  }
+
+  function PopulateBaseSelect(data) {
+    const container = document.querySelector(".js-use-rem-selection-container");
+    container.classList.add("hide-by-default--show");
+
+    const selector = document.querySelector("#selected-base");
+    selector.innerHTML = "";
+    data.forEach((textStyle) => {
+      const newOption = `<option value="${textStyle.id}"> ${sanitizeHTML(
+        textStyle.name
+      )}</option>`;
+
+      selector.innerHTML += newOption;
+    });
+
+    selectMenu.init({
+      position: "positionToSelection",
+    });
+  }
+
   // Main function
   function GenerateStyles(data) {
-    
     if (data.colors.length > 0) {
       textArea.value += "/* Color styles */\n";
-      data.colors.forEach(color => {
-        textArea.value += `--${color.name}: ${color.ColorStyle};\n`;
+      data.colors.forEach((color) => {
+        textArea.value += `--${sanitizeHTML(color.name)}: ${
+          color.ColorStyle
+        };\n`;
       });
     }
     if (data.sizes.length > 0) {
-      textArea.value += "\n/* Font-size styles */\n";
-      data.sizes.forEach(size => {
-        textArea.value += `--${size.name}: ${size.size}px;\n`;
-      });
+      if (textArea.value !== "") {
+        textArea.value += "\n";
+      }
+      textArea.value += "/* Text-size styles */\n";
+
+      if (data.remSizes.length > 0) {
+        textArea.value += `/* base size: ${sanitizeHTML(
+          data.remBaseSize.name
+        )} (${data.remBaseSize.size}px) */\n`;
+
+        data.remSizes.forEach((size) => {
+          textArea.value += `--${sanitizeHTML(size.name)}: ${size.size}rem;\n`;
+        });
+      } else {
+        data.sizes.forEach((size) => {
+          textArea.value += `--${sanitizeHTML(size.name)}: ${size.size}px;\n`;
+        });
+      }
     }
     if (data.effects.length > 0) {
-      textArea.value += "\n/* Effect styles */\n";
-      data.effects.forEach(effect => {
+      if (textArea.value !== "") {
+        textArea.value += "\n";
+      }
+      textArea.value += "/* Effect styles */\n";
+      data.effects.forEach((effect) => {
         if (effect.blur === ``) {
-          textArea.value += `--${effect.name}: ${effect.shadows};\n`;
+          textArea.value += `--${sanitizeHTML(effect.name)}: ${
+            effect.shadows
+          };\n`;
         } else {
           // blur exists, split effect into two
-          textArea.value += `--${effect.name}-shadows: ${effect.shadows};\n`;
-          textArea.value += `--${effect.name}-blur: ${effect.blur};\n`;
+          textArea.value += `--${sanitizeHTML(effect.name)}-shadows: ${
+            effect.shadows
+          };\n`;
+          textArea.value += `--${sanitizeHTML(effect.name)}-blur: ${
+            effect.blur
+          };\n`;
         }
       });
     }
@@ -2028,14 +2119,34 @@
     document.getElementById("copy").focus();
   }
 
-  // Messages from "backend"
-  onmessage = event => {
-    if (event.data.pluginMessage.type === "generated") {
-      GenerateStyles(event.data.pluginMessage.data);
+  document.getElementById("use-text").onclick = () => {
+    const remContainer = document.getElementById("use-rem-container");
+    if (document.getElementById("use-text").checked) {
+      remContainer.classList.remove("hide-by-default");
+    } else {
+      remContainer.classList.add("hide-by-default");
     }
+  };
 
-    if (event.data.pluginMessage.type === "copy") {
-      CopyToClipboard();
+  document.getElementById("use-rem").onclick = () => {
+    /*
+      Show "Select base" (need to populate list, so this needs to be sent to "backend" to get the styles)
+      If checked out, hide instead
+    */
+
+    /*
+      IMPORTANT! Need to check so the selected style is still available when running generate
+      (since a user can open the plugin, select it, remove the style and then run generate)
+      Throw error and stop if that happens
+    */
+
+    if (!document.getElementById("use-rem").checked) {
+      const container = document.querySelector(
+        ".js-use-rem-selection-container"
+      );
+      container.classList.remove("hide-by-default--show");
+    } else {
+      parent.postMessage({ pluginMessage: { type: "get-base" } }, "*");
     }
   };
 
@@ -2047,7 +2158,9 @@
       useColor: document.getElementById("use-colors").checked,
       colorStyle: document.getElementById("color-style").value,
       useText: document.getElementById("use-text").checked,
-      useEffect: document.getElementById("use-effects").checked
+      useRem: document.getElementById("use-rem").checked,
+      selectedBase: document.getElementById("selected-base").value,
+      useEffect: document.getElementById("use-effects").checked,
     };
 
     parent.postMessage(
