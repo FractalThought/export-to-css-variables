@@ -54,7 +54,10 @@ function Generate(options) {
         return;
     }
     if (options.useColor) {
-        const paintStyles = figma.getLocalPaintStyles();
+        const paintStyles = figma.getLocalPaintStyles().filter((paintStyle) => {
+            let color = paintStyle.paints[0];
+            return color.type === "SOLID";
+        });
         const colors = paintStyles.map((paintStyle) => {
             let color = paintStyle.paints[0];
             const rgb = {

@@ -14,3 +14,5 @@ Note:
 - Slashes that Figma uses for grouping is converted to double-dashes to follow the BEM methodology (modifiers).
 - spaces and camelCase naming is converted to kebab-case naming.
 - Special characters are removed.
+- Plugin will only generate from solid colors, no gradients or images.
+- If a style has more than one color, only the first color will be generated.
