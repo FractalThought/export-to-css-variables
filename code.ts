@@ -183,9 +183,7 @@ function GenerateShadowStyle({ type, color, offset, radius }) {
   )}, ${BeautifyColor(color.b)}, ${alpha})`;
 
   // If the effect is set as INNER_SHADOW, the shadow should be set to inset (this is how Figma shows it in the code-tab)
-  return `${type === "INNER_SHADOW" ? "inset" : ""} ${radius}px ${offset.x}px ${
-    offset.y
-  }px ${rgba}`;
+  return `${type === "INNER_SHADOW" ? "inset" : ""} ${offset.x}px ${offset.y}px ${radius}px ${rgba}`;
 }
 
 // Reason for this to be a backend function is that the UI doesn't have access to the notify function
